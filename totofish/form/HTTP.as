@@ -1,6 +1,6 @@
 ﻿/**
  * @author totofish
- * @date 2010/4/26 - 2010/7/21
+ * @date 2010/4/26 - 2012/3/29
  * @email eaneanean@hotmail.com
  */
 
@@ -10,19 +10,13 @@ package totofish.form {
 	import flash.net.*;
 	import flash.display.BitmapData;
 	import flash.utils.ByteArray;
-	import com.adobe.images.JPGEncoder;
 	import com.adobe.serialization.json.JSON;
+	import totofish.events.HTTPEvent;
 	
 	public class HTTP {
-		protected static var _instance:HTTP;
 		
 		public function HTTP(){
-		
-		}
-		
-		protected static function getInstance():HTTP {
-			if (_instance == null) { _instance = new HTTP(); }
-			return _instance;
+			throw new Error("HTTP class is static container only");
 		}
 		
 		/////////////////////////////////////////////////
@@ -30,14 +24,10 @@ package totofish.form {
 		// send(成功失敗function, 網址, 傳送的資料(object), method)
 		//
 		/////////////////////////////////////////////////
-		public static function send(Fun:Function, url:String, obj:Object, method:String="POST"):void {
-			getInstance().send(Fun, url, obj, method);
-		}
-		public function send(Fun:Function, url:String, obj:Object, method:String = "POST"):void {
-			var loader:URLLoader = new URLLoader();
-			var CB:CallBack = new CallBack(Fun, obj);
-			loader.addEventListener(Event.COMPLETE, CB.completeHandler);
-			loader.addEventListener(IOErrorEvent.IO_ERROR, CB.ioErrorHandler);
+		public static function send(Fun:Function, url:String, obj:Object, method:String = "POST"):void {
+			var Dloader:URLLoader = new URLLoader();
+			Dloader.addEventListener(Event.COMPLETE, completeHandler);
+			Dloader.addEventListener(IOErrorEvent.IO_ERROR, ioErrorHandler);
 			var request:URLRequest = new URLRequest(url);
 			var variables:URLVariables = new URLVariables();
 			for(var i in obj){
@@ -47,44 +37,18 @@ package totofish.form {
 			if(method=="POST")request.method = URLRequestMethod.POST;
 			else request.method = URLRequestMethod.GET;
 				
-			loader.load(request);
-		}
-		
-		//////////////////////////////////////////////
-		//
-		// JPG圖檔傳送   sendJpg(成功失敗function, 圖素, 網址, GET傳送的資料(object)
-		//
-		//////////////////////////////////////////////
-		public static function sendJpg(Fun:Function, bmp:BitmapData, url:String, obj:Object):void {
-			getInstance().sendJpg(Fun, bmp, url, obj);
-		}
-		public function sendJpg(Fun:Function, bmp:BitmapData, url:String, obj:Object):void {
-			var byteArray:ByteArray = new JPGEncoder(obj.quality?obj.quality:100).encode(bmp);
-			var Streamloader:URLLoader = new URLLoader();
-			Streamloader.addEventListener(IOErrorEvent.IO_ERROR, StreamERRORHandler);
-			Streamloader.addEventListener(Event.COMPLETE, StreamCompleteHandler);
-			var getStr:String = "?file=jpeg";
-			for(var i in obj){
-				getStr += "&"+encodeURIComponent(i)+"="+encodeURIComponent(obj[i]);
-			}
-			getStr += "&r="+Math.random();
-			var Streamrequest:URLRequest = new URLRequest(url+getStr);
-			Streamrequest.method = URLRequestMethod.POST;             // POST傳送
-			Streamrequest.contentType = "application/octet-stream";   // MIME 類型
-			Streamrequest.data = byteArray;                           // ByteArray形式ZIP資料
-			Streamloader.load(Streamrequest);
-			
-			function StreamCompleteHandler(event:Event){
+			Dloader.load(request);
+			function completeHandler(event:Event) {
 				var loader:URLLoader = URLLoader(event.target);
 				try{
 					var Data:Object = JSON.decode(loader.data.toString());
 				}catch (e) {
-					trace("非json格式");
+					//trace("非json格式");
 				}
-				if(Fun != null) Fun.apply(null,[{success:true, json:Data, data:loader.data, sendData:obj}]);
+				if (Fun != null) Fun.apply(null, [new HTTPEvent(HTTPEvent.EventType, true, obj, loader.data, Data)]);
 			}
-			function StreamERRORHandler(event:IOErrorEvent){
-				if(Fun != null) Fun.apply(null,[{success:false, json:null, data:null, sendData:obj}]);
+			function ioErrorHandler(event:IOErrorEvent) {
+				if (Fun != null) Fun.apply(null, [new HTTPEvent(HTTPEvent.EventType, false, obj, null, null)]);
 			}
 		}
 		
@@ -106,12 +70,14 @@ package totofish.form {
 				try{
 					var Data:Object = JSON.decode(STRloader.data.toString());
 				}catch (e) {
-					trace("非json格式");
+					//trace("非json格式");
 				}
-				if(Fun != null) Fun.apply(null,[{success:true, json:Data, data:STRloader.data, sendData:str}]);
+				//if (Fun != null) Fun.apply(null, [ { success:true, json:Data, data:STRloader.data, sendData:str } ]);
+				if (Fun != null) Fun.apply(null, [new HTTPEvent(HTTPEvent.EventType, true, str, STRloader.data, Data)]);
 			}
 			function ioErrorHandler(event:IOErrorEvent) {
-				if(Fun != null) Fun.apply(null,[{success:false, json:null, data:null, sendData:str}]);
+				//if (Fun != null) Fun.apply(null, [ { success:false, json:null, data:null, sendData:str } ]);
+				if (Fun != null) Fun.apply(null, [new HTTPEvent(HTTPEvent.EventType, false, str, null, null)]);
 			}
 		}
 		
@@ -140,56 +106,15 @@ package totofish.form {
 				try{
 					var Data:Object = JSON.decode(loader.data.toString());
 				}catch (e) {
-					trace("非json格式");
+					//trace("非json格式");
 				}
-				if(Fun != null) Fun.apply(null,[{success:true, json:Data, data:loader.data, sendData:obj}]);
+				//if (Fun != null) Fun.apply(null, [ { success:true, json:Data, data:loader.data, sendData:obj } ]);
+				if (Fun != null) Fun.apply(null, [new HTTPEvent(HTTPEvent.EventType, true, obj, loader.data, Data)]);
 			}
 			function StreamERRORHandler(event:IOErrorEvent){
-				if(Fun != null) Fun.apply(null,[{success:false, json:null, data:null, sendData:obj}]);
+				//if (Fun != null) Fun.apply(null, [ { success:false, json:null, data:null, sendData:obj } ]);
+				if (Fun != null) Fun.apply(null, [new HTTPEvent(HTTPEvent.EventType, false, obj, null, null)]);
 			}
 		}
-	}
-}
-
-
-
-
-
-
-
-
-
-
-import flash.events.Event;
-import flash.events.IOErrorEvent;
-import flash.events.ProgressEvent;
-import flash.net.URLLoader;
-import com.adobe.serialization.json.JSON;
-
-class CallBack {
-	public var DATA:Object;
-	private var _Fun:Function;
-	
-	public function CallBack(Fun:Function, data:Object) {
-		DATA = data;
-		_Fun = Fun;
-	}
-	
-	public function completeHandler(event:Event):void {
-		var loader:URLLoader = URLLoader(event.target);
-		try{
-			var Data:Object = JSON.decode(loader.data.toString());
-		}catch (e) {
-			trace("非json格式");
-		}
-		if(_Fun != null) _Fun.apply(null,[{success:true, json:Data, data:loader.data, sendData:DATA}]);
-	}
-	
-	public function ioErrorHandler(event:IOErrorEvent):void {
-		if(_Fun != null) _Fun.apply(null,[{success:false, json:null, data:null, sendData:DATA}]);
-	}
-	
-	public function progressHandler(event:ProgressEvent):void {
-		// 暫不提供此功能哈哈
 	}
 }

@@ -2,7 +2,7 @@
  * 資料來源 
  * http://www.klstudio.com/post/113.html
  * http://active.tutsplus.com/articles/roundups/15-useful-as3-snippets-on-snipplr-com/
- * 有微調部分
+ * +其他自己製作微調部分
  * 
  */
 
@@ -13,7 +13,55 @@ package totofish.util{
 		function StringUtil(){
 			throw new Error("StringUtil class is static container only");
 		}
-
+		
+		// 台灣身分證驗證
+		public static function checkTWID(id:String):Boolean {
+			var headPoint:Object = { 'A':1, 'B':10, 'C':19, 'D':28, 'E':37, 'F':46,
+									 'G':55, 'H':64, 'I':39, 'J':73, 'K':82, 'L':2,
+									 'M':11, 'N':20, 'O':48, 'P':29, 'Q':38, 'R':47,
+									 'S':56, 'T':65, 'U':74, 'V':83, 'W':21, 'X':3,
+									 'Y':12,'Z':30};
+			var re1:RegExp = new RegExp('^[a-zA-Z][1-2][0-9]{8}$');
+			if(re1.test(id) && id.length == 10){
+				var ay:Array = id.split("");
+				var num:int = headPoint[ay[0].toLocaleUpperCase()];
+				for(var i=1; i<ay.length-1; i++){
+					num += (9 - i) * int(ay[i]);
+				}
+				var checkid:int = num % 10 == 0 ? 0 : 10 - num % 10;
+				if(checkid == ay[9]){
+					return true;
+				}else{
+					return false;
+				}
+			}else{
+				return false;
+			}
+		}
+		
+		// 簡易台灣身分證產生
+		public static function getTwID(g:int = 0):String {
+			// g = 1 = 男, g = 2 = 女   -- 縣市會影響到英文開頭，這邊亂數決定
+			g = g > 2 ? 0 : g < 0 ? 0 : g;
+			var headPoint:Object = { 'A':1, 'B':10, 'C':19, 'D':28, 'E':37, 'F':46,
+									 'G':55, 'H':64, 'I':39, 'J':73, 'K':82, 'L':2,
+									 'M':11, 'N':20, 'O':48, 'P':29, 'Q':38, 'R':47,
+									 'S':56, 'T':65, 'U':74, 'V':83, 'W':21, 'X':3,
+									 'Y':12,'Z':30};
+			var id:String = String.fromCharCode(int(Math.random() * 26) + 65);
+			var gender:int = g == 0 ? int(Math.random() * 2) + 1 : g;
+			var num:int = headPoint[id] + gender * 8;
+			id += String(gender);
+			
+			for(var i=0; i<7; i++){
+				var n:int = int(Math.random() * 10);
+				num += n * (7 - i);
+				id += String(n);
+			}
+			var checkid:int = num % 10 == 0 ? 0 : 10 - num % 10;
+			return id + String(checkid);
+		}
+		
 		// 忽略大小字母比較字符是否相等
 		public static function equalsIgnoreCase(char1:String,char2:String):Boolean{
 			return char1.toLowerCase() == char2.toLowerCase();
@@ -300,6 +348,49 @@ package totofish.util{
 			return out.join('');
 		}
      
-
+		// FB分享連結
+		/**
+		 * Static method for creating a StringUtil instance.<br />
+		 * 組合FB分享連結網址<br />
+		 * <code>
+		 * 	StringUtil.fbSharerLink("http://www.google.com", "title", "內文", "90x90.jpg");
+		 * </code>
+		 * @param url 分享網址
+		 * @param title 分享標題
+		 * @param summary 分享簡介內文
+		 * @param images 圖片位置
+		 */
+		public static function fbSharerLink(url:String, title:String, summary:String, images:String):String {
+			return "http://www.facebook.com/sharer.php?s=100&p[url]=" + encodeURIComponent(url) + "&p[title]=" + encodeURIComponent(title) + "&p[summary]=" + encodeURIComponent(summary) + "&p[images][0]=" + encodeURIComponent(images);
+		}
+		
+		// FB分享META連結
+		/**
+		 * Static method for creating a StringUtil instance.<br />
+		 * 組合FB分享META連結網址<br />
+		 * <code>
+		 * 	StringUtil.fbSharerLink("http://www.google.com", "title");
+		 * </code>
+		 * @param url 分享網址
+		 * @param title 分享標題
+		 */
+		public static function fbMetaLink(url:String, title:String):String {
+			return "http://www.facebook.com/sharer.php?u=" + encodeURIComponent(url) + "&t=" + encodeURIComponent(title);
+		}
+		
+		// twitter分享連結
+		/**
+		 * Static method for creating a StringUtil instance.<br />
+		 * 組合twitter分享連結網址<br />
+		 * <code>
+		 * 	twSharerLink.fbSharerLink("http://www.google.com", "內文");
+		 * </code>
+		 * @param url 分享網址
+		 * @param text 分享簡介內文
+		 */
+		public static function twSharerLink(url:String, text:String):String {
+			return "http://twitter.com/intent/tweet?original_referer=" + encodeURIComponent(url) + "&text=" + encodeURIComponent(text) + "&url=" + encodeURIComponent(url);
+		}
+		
 	}
 }

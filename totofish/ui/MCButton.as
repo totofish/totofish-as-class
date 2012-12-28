@@ -1,6 +1,6 @@
 ﻿/**
  * @author totofish
- * @date 2010/9/16
+ * @date 2010/9/16 ~ 2011/10/25
  * @email eaneanean@hotmail.com
  */
 
@@ -127,6 +127,7 @@ package totofish.ui {
 		 *							selected:true,
 		 *							enable:true,
 		 *							autoKill:true,
+		 * 							autoRun:true, 
 		 *							setEvent:{onClick:EventHandler}
 		 *							});
 		 * </code>
@@ -138,6 +139,7 @@ package totofish.ui {
 		}
 		
 		protected function setBtn(target:MovieClip, setObj:Object = null):void {
+			if (checkButton(target)) killBtn(target);
 			setObj == null ? setObj = { } : null;
 			setObj.target = target;
 			MCHash[target] = new MCButtonData(setObj);
@@ -158,11 +160,11 @@ package totofish.ui {
 		}
 		
 		protected function killBtn(target:MovieClip):void {
-			MCHash[target].removeEventListener(MCButtonData.AUTO_KILL, AutoKill);
-			MCHash[target] is MCButtonData ? MCHash[target].kill() : null;
-			delete MCHash[target];
-			
-			
+			if (checkButton(target)){
+				MCHash[target].removeEventListener(MCButtonData.AUTO_KILL, AutoKill);
+				MCHash[target] is MCButtonData ? MCHash[target].kill() : null;
+				delete MCHash[target];
+			}
 		}
 		
 		//////////// killAll ////////////////////////////////////////////////////////

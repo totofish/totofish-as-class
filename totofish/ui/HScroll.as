@@ -1,6 +1,6 @@
 ﻿/**
  * @author totofish
- * @date 2010/5/27
+ * @date 2010/5/27-2011/8/17
  * @email eaneanean@hotmail.com
  */
 
@@ -29,6 +29,7 @@ package totofish.ui {
 	public class HScroll{
 		
 		private var _bar:MovieClip;
+		private var _bar_x:Number;
 		private var _barX:Number;
 		private var _barRange:Number;
 		private var _content:DisplayObject;
@@ -41,12 +42,29 @@ package totofish.ui {
 		private var stepTimer:Timer = new Timer(400);     // 進步移動時間
 		private var stepX:Number;                         // 進步移動數
 		
+		/**
+		 * 實現簡易橫向 scroll bar 效果<br />
+		 * <code>
+		 * var HS:HScroll = new HScroll({bar:bar_mc,          // 拉把
+		 *								 barW:100,            // 拉把移動限制距離
+		 *								 content:content_mc,  // 內容
+		 *								 areaW:100,           // 內容顯示範圍高度
+		 *								 left:left_mc,
+		 *								 right:right_mc});        
+		 * 
+		 * HS.reset();
+		 * </code>
+		 * @param	setObj  參數設定 For example: {bar:bar_mc, barW:100, content:content_mc, areaW:100, left:left_mc, right:right_mc}
+		 */
 		public function HScroll(setObj:Object) {
-			_bar = setObj.bar;
-			_barX = _bar.x;
-			_barRange = setObj.barW;
-			_bar.buttonMode = true;
-			
+			_barX = _bar_x = 0;
+			_barRange = 100;
+			if (setObj.bar) {
+				_bar = setObj.bar;
+				_barX = _bar_x = _bar.x;
+				_barRange = setObj.barW;
+				_bar.buttonMode = true;
+			}
 			if(setObj.left) _left = setObj.left;
 			if(setObj.right) _right = setObj.right;
 			
@@ -56,29 +74,32 @@ package totofish.ui {
 			
 			reset();
 			
-			_bar.addEventListener(Event.REMOVED_FROM_STAGE, onRemove, false, 0, true);
-			_bar.addEventListener(Event.ADDED_TO_STAGE, onAdd, false, 0, true);
-			
+			_content.addEventListener(Event.ADDED_TO_STAGE, onAdd, false, 0, true);
 			stepTimer.addEventListener(TimerEvent.TIMER, onStepMove, false, 0, true);
 		}
 		
 		private function onAdd(e:Event):void {
+			_content.removeEventListener(Event.ADDED_TO_STAGE, onAdd);
+			_content.addEventListener(Event.REMOVED_FROM_STAGE, onRemove, false, 0, true);
 			reset();
 		}
 		
 		private function onRemove(e:Event):void {
-			_bar.stopDrag();
+			_content.removeEventListener(Event.REMOVED_FROM_STAGE, onRemove);
+			if (_bar) {
+				_bar.stopDrag();
+				_bar.removeEventListener(MouseEvent.MOUSE_DOWN, barHandler);
+			}
+			_content.stage.removeEventListener(MouseEvent.MOUSE_UP, barHandler);
 			dragging = false;
-			_bar.removeEventListener(MouseEvent.MOUSE_DOWN, barHandler);
-			_bar.stage.removeEventListener(MouseEvent.MOUSE_UP, barHandler);
 			_content.removeEventListener(MouseEvent.MOUSE_WHEEL, wheel);
 		}
 		
 		private function barHandler(e:MouseEvent):void {
 			switch(e.type) {
 				case MouseEvent.MOUSE_DOWN:
-					_bar.addEventListener(Event.ENTER_FRAME, EnterFrame, false, 0, true);
-					_bar.stage.addEventListener(MouseEvent.MOUSE_UP, barHandler, false, 0, true);
+					_content.addEventListener(Event.ENTER_FRAME, EnterFrame, false, 0, true);
+					_content.stage.addEventListener(MouseEvent.MOUSE_UP, barHandler, false, 0, true);
 					switch(e.currentTarget) {
 						case _bar:
 							_bar.startDrag(false, new Rectangle(_barX, _bar.y, _barRange, 0));
@@ -101,10 +122,10 @@ package totofish.ui {
 					
 				break;
 				case MouseEvent.MOUSE_UP:
-					_bar.stopDrag();
+					if(_bar) _bar.stopDrag();
 					dragging = false;
 					if(stepTimer.running) stepTimer.stop();
-					if(_bar["stage"]) _bar.stage.removeEventListener(MouseEvent.MOUSE_UP, barHandler);
+					if(_content["stage"]) _content.stage.removeEventListener(MouseEvent.MOUSE_UP, barHandler);
 				break;
 			}
 		}
@@ -114,39 +135,39 @@ package totofish.ui {
 			move(stepX);
 		}
 		private function move(value:Number):void {
-			_bar.x += value;
-			_bar.x = _bar.x > _barX + _barRange ? _barX + _barRange : _bar.x < _barX ? _barX : _bar.x;
+			_bar_x += value;
+			_bar_x = _bar_x > _barX + _barRange ? _barX + _barRange : _bar_x < _barX ? _barX : _bar_x;
+			if(_bar) _bar.x = _bar_x;
 		}
 		
 		private function EnterFrame(e:Event):void {
-			var MovePoint:Number = (_bar.x - _barX) / _barRange * -(_content.width - _areaW) + _contentX;
+			if (_bar) _bar_x = _bar.x;
+			var MovePoint:Number = (_bar_x - _barX) / _barRange * -(_content.width - _areaW) + _contentX;
 			_content.x += (MovePoint - _content.x) * .2;
 			
 			if(Math.abs(MovePoint - _content.x) < 0.5 && !dragging){
 				_content.x = MovePoint;
-				_bar.removeEventListener(Event.ENTER_FRAME, EnterFrame);
+				_content.removeEventListener(Event.ENTER_FRAME, EnterFrame);
 			}
 		}
 		
 		private function wheel(e:MouseEvent):void {
 			if (_content.width > _areaW) {
 				//_bar.x -= e.delta * _barRange / 3 * .1;
-				_bar.x -= e.delta * (_barRange / ((_content.width - _areaW)/10));
-				if (_bar.x<_barX) {
-					_bar.x = _barX;
-				} else if (_bar.x > _barX + _barRange) {
-					_bar.x = _barX + _barRange;
-				}
+				_bar_x -= e.delta * (_barRange / ((_content.width - _areaW) / 10));
+				_bar_x = _bar_x < _barX ? _barX : _bar_x > _barX + _barRange ? _barX + _barRange : _bar_x;
+				if(_bar) _bar.x = _bar_x;
 			}
-			_bar.addEventListener(Event.ENTER_FRAME, EnterFrame, false, 0, true);
+			_content.addEventListener(Event.ENTER_FRAME, EnterFrame, false, 0, true);
 		}
 		
 		public function reset():void {
-			_bar.x = _barX;
+			_bar_x = _barX;
+			if(_bar) _bar.x = _bar_x;
 			_content.x = _contentX;
 			
 			if (_content.width <= _areaW) {
-				_bar.visible = false;
+				if(_bar) _bar.visible = false;
 				if (_left) {
 					_left.visible = false;
 					_left.removeEventListener(MouseEvent.MOUSE_DOWN, barHandler);
@@ -157,11 +178,11 @@ package totofish.ui {
 				}
 				
 				_content.removeEventListener(MouseEvent.MOUSE_WHEEL, wheel);
-				_bar.removeEventListener(MouseEvent.MOUSE_DOWN, barHandler);
+				if(_bar) _bar.removeEventListener(MouseEvent.MOUSE_DOWN, barHandler);
 			}else {
-				_bar.visible = true;
+				if(_bar) _bar.visible = true;
 				_content.addEventListener(MouseEvent.MOUSE_WHEEL, wheel,false,0,true);
-				_bar.addEventListener(MouseEvent.MOUSE_DOWN, barHandler);
+				if(_bar) _bar.addEventListener(MouseEvent.MOUSE_DOWN, barHandler);
 				if (_left) {
 					_left.visible = true;
 					_left.addEventListener(MouseEvent.MOUSE_DOWN, barHandler);
