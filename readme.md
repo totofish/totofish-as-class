@@ -1,13 +1,13 @@
 ﻿###Summary
 
-這是 **totofish** 個人慣用的`ActionScript`類別
+這是 **totofish** 個人慣用的 **`ActionScript`** 類別
 
 包含資料傳送類別、地址選擇器、日期選擇器、按鈕控制、濾鏡...
 
 
 ###Getting Started
 
-* **totofish.ui.MCButton.as**用法說明
+* **`totofish.ui.MCButton.as`** 用法說明
 
 ```actionscript
 MCButton.setBtn(mc);
