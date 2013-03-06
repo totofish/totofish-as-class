@@ -26,4 +26,6 @@ MCButton.setBtn(mc, {speed:10,                         // 全狀態影格速度�
 		     autoRun:true,                     // 是否依照 label 標籤跑影格
 		     setEvent:{onClick:EventHandler}   // 直接設定事件function,用法請參考setEvent方法
 		     });
+
+MC.Smooth({ up:0, over:0, down:0, selected:0, disable:0 });
 ```
