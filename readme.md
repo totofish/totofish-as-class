@@ -90,3 +90,19 @@ FrameControl.goLast(MC, EventHandler, [1, 2]);
 // 播放到第一影格(後2參數非必要)
 FrameControl.goFront(MC, EventHandler, [1, 2]);
 ```
+
+
+
+
+* **`totofish.ui.VScroll.as`** 按鈕控制類別用法說明
+
+```actionscript
+var VS:VScroll = new VScroll({bar:bar_mc,          // 拉把
+							  barH:100,            // 拉把移動限制距離
+							  content:content_mc,  // 內容
+							  areaH:100,           // 內容顯示範圍高度
+							  top:top_mc,
+							  bottom:bottom_mc});        
+
+VS.reset();
+```
