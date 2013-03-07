@@ -72,3 +72,21 @@ function EventHandler(...args){
 }
 
 ```
+
+
+
+* **`totofish.ui.FrameControl.as`** 按鈕控制類別用法說明
+
+```actionscript
+FrameControl.goFrame(MC, 15, EventHandler, ["a",true]);
+function EventHandler(a,b){
+		trace(a, b);
+}
+
+// 到某一指定影格(後2參數非必要)
+FrameControl.goFrame(MC, 15);
+// 播放到最後影格(後2參數非必要)
+FrameControl.goLast(MC, EventHandler, [1, 2]);
+// 播放到第一影格(後2參數非必要)
+FrameControl.goFront(MC, EventHandler, [1, 2]);
+```
