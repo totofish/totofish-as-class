@@ -1,4 +1,4 @@
-﻿﻿###Summary
+###Summary
 
 這是 **totofish** 個人慣用的 **`ActionScript`** 類別
 
