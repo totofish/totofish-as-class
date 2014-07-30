@@ -10,7 +10,7 @@ package totofish.form {
 	import flash.net.*;
 	import flash.display.BitmapData;
 	import flash.utils.ByteArray;
-	import com.adobe.serialization.json.JSON;
+	//import com.adobe.serialization.json.JSON;
 	import totofish.events.HTTPEvent;
 	
 	public class HTTP {
@@ -41,7 +41,7 @@ package totofish.form {
 			function completeHandler(event:Event) {
 				var loader:URLLoader = URLLoader(event.target);
 				try{
-					var Data:Object = JSON.decode(loader.data.toString());
+					var Data:Object = JSON.parse(loader.data.toString());
 				}catch (e) {
 					//trace("非json格式");
 				}
@@ -68,7 +68,7 @@ package totofish.form {
 			function completeHandler(event:Event) {
 				var STRloader:URLLoader = URLLoader(event.target);
 				try{
-					var Data:Object = JSON.decode(STRloader.data.toString());
+					var Data:Object = JSON.parse(STRloader.data.toString());
 				}catch (e) {
 					//trace("非json格式");
 				}
@@ -104,7 +104,7 @@ package totofish.form {
 			function StreamCompleteHandler(event:Event){
 				var loader:URLLoader = URLLoader(event.target);
 				try{
-					var Data:Object = JSON.decode(loader.data.toString());
+					var Data:Object = JSON.parse(loader.data.toString());
 				}catch (e) {
 					//trace("非json格式");
 				}
